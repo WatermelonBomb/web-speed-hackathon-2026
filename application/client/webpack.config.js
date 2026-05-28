@@ -128,9 +128,17 @@ const config = {
       maxInitialRequests: 25,
       minSize: 20000,
       cacheGroups: {
+        // 重いライブラリは遅延ロード用に別チャンクに分離
+        heavyLibs: {
+          test: /[\\/]node_modules[\\/](negaposi-analyzer-ja|kuromoji|@imagemagick|@ffmpeg)[\\/]/,
+          name: "heavy-libs",
+          chunks: "async",
+          priority: 20,
+        },
         vendor: {
           test: /[\\/]node_modules[\\/]/,
           name: "vendor",
+          chunks: "initial",
           priority: 10,
         },
         common: {

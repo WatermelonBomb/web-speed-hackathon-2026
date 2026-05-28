@@ -1,4 +1,4 @@
-import kuromoji, { type Tokenizer, type IpadicFeatures } from "kuromoji";
+import type { Tokenizer, IpadicFeatures } from "kuromoji";
 import {
   useEffect,
   useLayoutEffect,
@@ -16,9 +16,11 @@ import {
 } from "@web-speed-hackathon-2026/client/src/utils/bm25_search";
 import { fetchJSON } from "@web-speed-hackathon-2026/client/src/utils/fetchers";
 
-function buildTokenizer(): Promise<Tokenizer<IpadicFeatures>> {
+// kuromojiを動的インポートでロード（バンドルサイズ削減）
+async function buildTokenizer(): Promise<Tokenizer<IpadicFeatures>> {
+  const kuromoji = await import("kuromoji");
   return new Promise((resolve, reject) => {
-    kuromoji.builder({ dicPath: "/dicts" }).build((err, tokenizer) => {
+    kuromoji.default.builder({ dicPath: "/dicts" }).build((err, tokenizer) => {
       if (err) {
         reject(err);
       } else {

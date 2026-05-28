@@ -30,6 +30,15 @@ export async function sendFile<T>(url: string, file: File): Promise<T> {
   return response.json();
 }
 
+// カスタムエラークラスでレスポンスJSONを含む
+export class FetchError extends Error {
+  responseJSON: unknown;
+  constructor(message: string, responseJSON: unknown) {
+    super(message);
+    this.responseJSON = responseJSON;
+  }
+}
+
 export async function sendJSON<T>(url: string, data: object): Promise<T> {
   const jsonString = JSON.stringify(data);
   const uint8Array = new TextEncoder().encode(jsonString);
@@ -44,7 +53,13 @@ export async function sendJSON<T>(url: string, data: object): Promise<T> {
     body: compressed,
   });
   if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    let responseJSON: unknown = null;
+    try {
+      responseJSON = await response.json();
+    } catch {
+      // JSONパースに失敗した場合は無視
+    }
+    throw new FetchError(`HTTP error! status: ${response.status}`, responseJSON);
   }
   return response.json();
 }

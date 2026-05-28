@@ -1,13 +1,18 @@
 import { initializeImageMagick, ImageMagick, MagickFormat } from "@imagemagick/magick-wasm";
-import magickWasm from "@imagemagick/magick-wasm/magick.wasm?binary";
 import { dump, insert, ImageIFD } from "piexifjs";
+
+// WASMをCDNから動的にロード（バンドルサイズ削減のため）
+const MAGICK_WASM_CDN_URL = "https://cdn.jsdelivr.net/npm/@imagemagick/magick-wasm@0.0.34/dist/magick.wasm";
 
 interface Options {
   extension: MagickFormat;
 }
 
 export async function convertImage(file: File, options: Options): Promise<Blob> {
-  await initializeImageMagick(magickWasm);
+  // WASMをCDNからフェッチして初期化
+  const wasmResponse = await fetch(MAGICK_WASM_CDN_URL);
+  const wasmBytes = await wasmResponse.arrayBuffer();
+  await initializeImageMagick(new Uint8Array(wasmBytes));
 
   const byteArray = new Uint8Array(await file.arrayBuffer());
 
